@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShiftMaster Pro - Privacy Admin</title>
+    <style>
+        :root {
+            --primary: #0062ff; --secondary: #64748b; --success: #22c55e;
+            --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --text: #1e293b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); line-height: 1.5; }
+        header { background: var(--card); border-bottom: 1px solid #e2e8f0; padding: 1rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1300px; margin: 0 auto; }
+        .logo { font-weight: 800; color: var(--primary); font-size: 1.3rem; cursor: pointer; }
+        .nav-links button { background: #fee2e2; border: none; color: var(--danger); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .container { max-width: 1300px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card h2 { margin-bottom: 1.25rem; font-size: 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+        .btn { padding: 0.75rem 1.25rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; display: inline-block; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-full { width: 100%; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .radio-group { display: flex; gap: 1rem; }
+        .radio-group input[type="radio"] { display: none; }
+        .radio-card { flex: 1; padding: 1.2rem; border: 2px solid #e2e8f0; border-radius: 12px; text-align: center; cursor: pointer; background: white; display: flex; flex-direction: column; gap: 5px; }
+        .radio-group input[type="radio"]:checked + .radio-card { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; min-width: 1000px; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+        th { background: #f8fafc; color: var(--secondary); font-weight: 600; text-transform: uppercase; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; }
+        .bg-smart { background: #dcfce7; color: #166534; }
+        .bg-sede { background: #fee2e2; color: #991b1b; }
+        .hidden { display: none !important; }
+        .admin-input { padding: 0.5rem; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <header id="main-nav" class="hidden">
+        <div class="nav-container">
+            <div class="logo" id="app-logo">ShiftMaster 💼</div>
+            <div class="nav-links"><button onclick="Auth.logout()">Esci</button></div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <section id="view-login" class="hidden">
+            <div class="card" style="max-width: 400px; margin: 4rem auto;">
+                <h2 style="justify-content: center;">Accesso</h2>
+                <div class="form-group"><label>Username</label><input type="text" id="login-user"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="login-pass"></div>
+                <button class="btn btn-primary btn-full" onclick="Auth.login()">Entra</button>
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem;"><a href="#" onclick="App.router('register')" style="color: var(--primary); font-weight: 600;">Registra nuovo utente</a></p>
+            </div>
+        </section>
+
+        <section id="view-register" class="hidden">
+            <div class="card" style="max-width: 450px; margin: 2rem auto;">
+                <h2>Nuova Registrazione</h2>
+                <div class="form-group"><label>Username</label><input type="text" id="reg-user"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="reg-pass"></div>
+                <div class="form-group"><label>Prodotto</label><select id="reg-product" class="prod-select"></select></div>
+                <button class="btn btn-primary btn-full" onclick="Auth.register()">Crea Account</button>
+                <button class="btn btn-full" style="margin-top:0.5rem;" onclick="App.router('login')">Annulla</button>
+            </div>
+        </section>
+
+        <section id="view-user-dashboard" class="hidden">
+            <h2 style="margin-bottom: 2rem;">Ciao, <span id="welcome-name" style="color: var(--primary);"></span>!</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                <div class="card" onclick="App.router('insert')" style="cursor: pointer; text-align: center;"><span>📅</span><h3>Inserisci Turno</h3></div>
+                <div class="card" onclick="App.router('my-list')" style="cursor: pointer; text-align: center;"><span>📋</span><h3>I miei Turni</h3></div>
+                <div class="card" onclick="App.router('profile')" style="cursor: pointer; text-align: center;"><span>👤</span><h3>Profilo / Prodotto</h3></div>
+            </div>
+        </section>
+
+        <section id="view-insert" class="hidden">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h2>Carica Disponibilità</h2>
+                <div class="form-group"><label>Data</label><input type="date" id="s-date"></div>
+                <div class="form-group">
+                    <label>Fascia Oraria</label>
+                    <select id="s-type" onchange="Shift.toggleCustom()">
+                        <option value="MATTINA">MATTINA (08:30 - 14:30)</option>
+                        <option value="POMERIGGIO">POMERIGGIO (14:30 - 20:30)</option>
+                        <option value="PERSONALIZZATO">PERSONALIZZATO...</option>
+                    </select>
+                </div>
+                <div id="custom-time-box" class="hidden" style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div style="flex:1"><label>Inizio:</label><input type="time" id="s-start"></div>
+                    <div style="flex:1"><label>Fine:</label><input type="time" id="s-end"></div>
+                </div>
+                <div class="form-group">
+                    <label>Modalità</label>
+                    <div class="radio-group">
+                        <input type="radio" name="mode" id="m-sede" value="IN SEDE" checked>
+                        <label for="m-sede" class="radio-card"><span>🏢</span><strong>IN SEDE</strong></label>
+                        <input type="radio" name="mode" id="m-smart" value="IN SMART">
+                        <label for="m-smart" class="radio-card"><span>🏠</span><strong>IN SMART</strong></label>
+                    </div>
+                </div>
+                <button class="btn btn-success btn-full" style="margin-top:1rem;" onclick="Shift.save()">Salva Turno</button>
+                <button class="btn btn-full" style="margin-top:0.5rem;" onclick="App.router('user-dashboard')">Annulla</button>
+            </div>
+        </section>
+
+        <section id="view-admin" class="hidden">
+            <div class="card">
+                <h2>Tabella Turni <button class="btn btn-sm btn-success" onclick="Admin.export()">Esporta Report</button></h2>
+                <div class="table-wrapper"><table id="t-admin-shifts"><thead><tr><th>Data</th><th>Utente</th><th>Orario</th><th>Mod.</th><th>Prodotto</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div class="card">
+                <h2>Gestione Utenti</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Nuova Password</th>
+                                <th>Prodotto</th>
+                                <th style="text-align:center">Salva</th>
+                                <th style="text-align:center">Elimina</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-user-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-my-list" class="hidden">
+            <div class="card">
+                <h2>I tuoi inserimenti</h2>
+                <div class="table-wrapper"><table id="t-my-shifts"><thead><tr><th>Data</th><th>Orario</th><th>Mod.</th><th>Azione</th></tr></thead><tbody></tbody></table></div>
+                <button class="btn btn-primary btn-full" style="margin-top: 1.5rem;" onclick="App.router('user-dashboard')">Home</button>
+            </div>
+        </section>
+
+        <section id="view-profile" class="hidden">
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <h2>Profilo Personale</h2>
+                <div class="form-group"><label>Nome</label><input type="text" id="p-user"></div>
+                <div class="form-group"><label>Nuova Password</label><input type="password" id="p-pass" placeholder="Lascia vuoto per non cambiare"></div>
+                <div class="form-group"><label>Cambia Prodotto</label><select id="p-prod" class="prod-select"></select></div>
+                <button class="btn btn-primary btn-full" onclick="User.update()">Aggiorna Dati</button>
+                <button class="btn btn-full" style="margin-top:0.5rem;" onclick="App.router('user-dashboard')">Annulla</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const PRODS = [
+            "AGOS DUCATO SPA", "ALAYAN", "ALLEANZA", "AMAG", "B2B", "B2B ESTERO", "BANCA IFIS", 
+            "BANCA REALE", "BANCOPOSTA", "BPM UTP MICRO", "COFACE", "COFIDIS", "CREDIT-AGRICOLE", 
+            "DB EASY", "DOMPE", "E_ON", "ESTRA", "FEDEX", "FIDITALIA", "GARDANT", "HAMBURG", 
+            "HEIDIPAY", "HENRY SCHEIN KRUGG", "HENRY SCHEIN KRUGG + ESA", "HERA", "ING", "MOTUL", 
+            "NA ALLIANZ BANK", "NA AVVERA", "NA BANCA IFIS", "NA BANCA INTESA", "NA BANCO BPM", 
+            "NA BANCOPOSTA", "NA BPER", "NA COMPASS", "NA DB PRECTZ", "NA GROUPAMA ASSICURAZIONI S.P.A.", 
+            "NA ITAS ASSICURAZIONI", "NA MEDIOLANUM", "OPTMA", "PLENITUDE", "PROCTER", "SANTANDER", 
+            "SECAM", "SIAD", "SONEPAR", "TELECONTROLLO", "TIM CREDITI OPERATIVI", "TIM STRAGIUDIZIALE", 
+            "TOWA", "VIVIGAS"
+        ];
+
+        const DB_KEY = { U: 'SM_USERS_V7', S: 'SM_SHIFTS_V7', SS: 'SM_SESS_V7' };
+
+        const DB = {
+            getU: () => JSON.parse(localStorage.getItem(DB_KEY.U)) || [],
+            setU: (v) => localStorage.setItem(DB_KEY.U, JSON.stringify(v)),
+            getS: () => JSON.parse(localStorage.getItem(DB_KEY.S)) || [],
+            setS: (v) => localStorage.setItem(DB_KEY.S, JSON.stringify(v)),
+            init: () => {
+                let u = DB.getU();
+                if(!u.find(x => x.user === 'admin')) {
+                    u.push({id: 1, user: 'admin', pass: 'admin123', role: 'admin', prod: 'VIVIGAS'});
+                    DB.setU(u);
+                }
+            }
+        };
+
+        let Current = null;
+
+        const Auth = {
+            login: () => {
+                const u = document.getElementById('login-user').value.trim();
+                const p = document.getElementById('login-pass').value.trim();
+                const user = DB.getU().find(x => x.user === u && x.pass === p);
+                if(user) {
+                    Current = user; sessionStorage.setItem(DB_KEY.SS, JSON.stringify(user));
+                    App.router(user.role === 'admin' ? 'admin' : 'user-dashboard');
+                } else alert('Username o Password errati.');
+            },
+            register: () => {
+                const u = document.getElementById('reg-user').value.trim();
+                const p = document.getElementById('reg-pass').value.trim();
+                const pr = document.getElementById('reg-product').value;
+                if(!u || p.length < 3) return alert('Dati incompleti.');
+                let users = DB.getU();
+                if(users.find(x => x.user === u)) return alert('Username già esistente.');
+                users.push({id: Date.now(), user: u, pass: p, prod: pr, role: 'user'});
+                DB.setU(users); alert('Utente registrato!'); App.router('login');
+            },
+            logout: () => { sessionStorage.clear(); location.reload(); }
+        };
+
+        const Shift = {
+            toggleCustom: () => {
+                const isCustom = document.getElementById('s-type').value === 'PERSONALIZZATO';
+                document.getElementById('custom-time-box').classList.toggle('hidden', !isCustom);
+            },
+            save: () => {
+                const date = document.getElementById('s-date').value;
+                if(!date) return alert('Manca la data.');
+                let type = document.getElementById('s-type').value;
+                if(type === 'PERSONALIZZATO') {
+                    const s = document.getElementById('s-start').value;
+                    const e = document.getElementById('s-end').value;
+                    if(!s || !e) return alert('Inserisci inizio e fine.');
+                    type = `${s} - ${e}`;
+                }
+                const mode = document.querySelector('input[name="mode"]:checked').value;
+                let shifts = DB.getS();
+                shifts = shifts.filter(x => !(x.userId === Current.id && x.date === date));
+                shifts.push({id: Date.now(), userId: Current.id, userName: Current.user, prod: Current.prod, date, type, mode});
+                DB.setS(shifts); alert('Salvato!'); App.router('my-list');
+            }
+        };
+
+        const Admin = {
+            render: () => {
+                const u = DB.getU(); const s = DB.getS();
+                document.getElementById('t-admin-shifts').querySelector('tbody').innerHTML = s.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(x => `
+                    <tr><td>${x.date}</td><td><strong>${x.userName}</strong></td><td>${x.type}</td><td><span class="badge ${x.mode==='IN SMART'?'bg-smart':'bg-sede'}">${x.mode}</span></td><td>${x.prod}</td></tr>
+                `).join('');
+                
+                document.getElementById('admin-user-body').innerHTML = u.map(x => `
+                    <tr>
+                        <td><input type="text" class="admin-input" id="u-name-${x.id}" value="${x.user}"></td>
+                        <td><input type="password" class="admin-input" id="u-pass-${x.id}" placeholder="Lascia vuoto"></td>
+                        <td><select class="admin-input" id="u-prod-${x.id}">${PRODS.map(p => `<option value="${p}" ${p===x.prod?'selected':''}>${p}</option>`).join('')}</select></td>
+                        <td style="text-align:center"><button class="btn btn-primary btn-sm" onclick="Admin.saveUser(${x.id})">Salva</button></td>
+                        <td style="text-align:center">${x.user!=='admin'?`<button class="btn btn-danger btn-sm" onclick="Admin.del(${x.id})">Elimina</button>`:'-'}</td>
+                    </tr>
+                `).join('');
+            },
+            saveUser: (id) => {
+                let u = DB.getU();
+                let idx = u.findIndex(x => x.id === id);
+                const newName = document.getElementById(`u-name-${id}`).value;
+                const newPass = document.getElementById(`u-pass-${id}`).value;
+                const newProd = document.getElementById(`u-prod-${id}`).value;
+
+                u[idx].user = newName;
+                u[idx].prod = newProd;
+                if(newPass) u[idx].pass = newPass;
+
+                DB.setU(u);
+                alert('Dati utente aggiornati con successo!');
+                Admin.render();
+            },
+            del: (id) => { if(confirm("Cancellare utente e relativi turni?")) { DB.setU(DB.getU().filter(x=>x.id!==id)); DB.setS(DB.getS().filter(x=>x.userId!==id)); Admin.render(); } },
+            export: () => {
+                let s = DB.getS();
+                let csv = "Data;Utente;Orario;Modalità;Prodotto\n" + s.map(x => `${x.date};${x.userName};${x.type};${x.mode};${x.prod}`).join("\n");
+                let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], {type:'text/csv'})); a.download="export_turni.csv"; a.click();
+            }
+        };
+
+        const User = {
+            update: () => {
+                let u = DB.getU(); let idx = u.findIndex(x=>x.id===Current.id);
+                u[idx].user = document.getElementById('p-user').value;
+                u[idx].prod = document.getElementById('p-prod').value;
+                if(document.getElementById('p-pass').value) u[idx].pass = document.getElementById('p-pass').value;
+                DB.setU(u); Current = u[idx]; sessionStorage.setItem(DB_KEY.SS, JSON.stringify(Current));
+                alert('Aggiornato!'); App.router('user-dashboard');
+            }
+        };
+
+        const App = {
+            init: () => {
+                DB.init();
+                document.querySelectorAll('.prod-select').forEach(sel => {
+                    sel.innerHTML = ""; PRODS.forEach(p => sel.add(new Option(p,p)));
+                });
+                document.getElementById('app-logo').onclick = () => { if(Current) App.router(Current.role==='admin'?'admin':'user-dashboard'); };
+                const s = sessionStorage.getItem(DB_KEY.SS);
+                if(s) { Current = JSON.parse(s); App.router(Current.role==='admin'?'admin':'user-dashboard'); } else App.router('login');
+            },
+            router: (r) => {
+                document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+                document.getElementById('main-nav').classList.toggle('hidden', ['login','register'].includes(r));
+                document.getElementById(`view-${r}`).classList.remove('hidden');
+                if(r==='admin') Admin.render();
+                if(r==='user-dashboard') document.getElementById('welcome-name').innerText = Current.user;
+                if(r==='profile') { document.getElementById('p-user').value=Current.user; document.getElementById('p-prod').value=Current.prod; document.getElementById('p-pass').value=''; }
+                if(r==='my-list') {
+                    const m = DB.getS().filter(x => x.userId === Current.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+                    document.getElementById('t-my-shifts').querySelector('tbody').innerHTML = m.map(x => `
+                        <tr><td>${x.date}</td><td>${x.type}</td><td>${x.mode}</td><td><button class="btn btn-danger btn-sm" onclick="App.delS(${x.id})">X</button></td></tr>
+                    `).join('');
+                }
+            },
+            delS: (id) => { if(confirm("Cancellare questo inserimento?")) { DB.setS(DB.getS().filter(x=>x.id!==id)); App.router('my-list'); } }
+        };
+        window.onload = App.init;
+    </script>
+</body>
+</html>
